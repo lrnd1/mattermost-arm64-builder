@@ -30,13 +30,20 @@ jobs:
       - name: Get latest Mattermost version
         id: version
         run: |
-          # Get the latest stable release from Mattermost GitHub
           LATEST_VERSION=$(curl -s https://api.github.com/repos/mattermost/mattermost/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-          
-          echo "Latest Mattermost version: $LATEST_VERSION"
           echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Show version info
-        run: |
-          echo "✅ Detected version: ${{ steps.version.outputs.version }}"
-          echo "This version will be used for the Docker image tag"
+      - name: Build and push Mattermost ARM64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/mattermost-team-arm64:latest
+            ghcr.io/${{ github.repository_owner }}/mattermost-team-arm64:${{ steps.version.outputs.version }}
+          build-args: |
+            MATTERMOST_VERSION=${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
