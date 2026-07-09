@@ -1,14 +1,13 @@
 name: Mattermost ARM64 Builder
 
 on:
-  workflow_dispatch:  # Manual run button
-  
+  workflow_dispatch:
   schedule:
-    - cron: '0 3 * * *'  # Daily at 3 AM UTC - change later if you want
+    - cron: '0 3 * * *'
 
 permissions:
   contents: read
-  packages: write   # Needed to push images to GHCR
+  packages: write
 
 jobs:
   build:
@@ -28,8 +27,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test Docker setup
+      - name: Get latest Mattermost version
+        id: version
         run: |
-          echo "✅ Docker Buildx is ready"
-          docker buildx version
-          echo "Logged in as: ${{ github.actor }}"
+          # Get the latest stable release from Mattermost GitHub
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/mattermost/mattermost/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          
+          echo "Latest Mattermost version: $LATEST_VERSION"
+          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Show version info
+        run: |
+          echo "✅ Detected version: ${{ steps.version.outputs.version }}"
+          echo "This version will be used for the Docker image tag"
