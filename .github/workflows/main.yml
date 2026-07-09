@@ -27,11 +27,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get latest Mattermost version
+      - name: Get latest Mattermost version (clean, without v prefix)
         id: version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/mattermost/mattermost/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          # Get tag from GitHub and remove leading 'v'
+          RAW_VERSION=$(curl -s https://api.github.com/repos/mattermost/mattermost/releases/latest | grep '"tag_name":' | sed -E 's/.*"v?([^"]+)".*/\1/')
+          echo "Clean version for download: $RAW_VERSION"
+          echo "version=$RAW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build and push Mattermost ARM64 image
         uses: docker/build-push-action@v6
