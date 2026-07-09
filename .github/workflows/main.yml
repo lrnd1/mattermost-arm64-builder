@@ -1,0 +1,24 @@
+name: Test Workflow - Mattermost ARM64 Builder
+
+on:
+  # Manual trigger 
+  workflow_dispatch:
+  
+  # Schedule: Runs once per day at 3 AM UTC
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Print hello message
+        run: |
+          echo "✅ Hello from GitHub Actions!"
+          echo "Current time: $(date)"
+          echo "Repository: ${{ github.repository }}"
+          echo "This is just a test - next step will add Docker build."
